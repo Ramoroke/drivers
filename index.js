@@ -1,9 +1,7 @@
 const express = require("express");
 const mysql = require("mysql");
 const cors = require("cors");
-const quests = require("./Services/questions");
 const addUser = require("./Functions/functions");
-const { Signs } = require("./Services/Signs");
 
 const app = express();
 
@@ -81,21 +79,32 @@ app.post("/register", (req, res) => {
   // Send Message to whatsApp
 });
 
-// Gets Questions
 app.get("/api/questions", (req, res) => {
-  var count = 0;
   const questions = { questions: [] };
-  while (count < 7) {
-    const item = quests.quest[Math.floor(Math.random() * quests.quest.length)];
-    questions.questions.push(item);
-    count++;
-  }
-  res.send(questions);
+  const query = 'SELECT * FROM Questions ORDER BY RAND() LIMIT 7'; 
+
+  connection.query(query, (error, results, fields) => {
+    if (error) {
+      console.error('Error querying database: ' + error.stack);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+
+    questions.questions = results;
+    res.json(questions);
+  });
 });
 
 // Get Signs
 app.get("/api/signs", (req, res) => {
-  res.send(Signs);
+  connection.query('SELECT * FROM Signs', (error, results, fields) => {
+    if (error) {
+      console.error('Error querying database: ' + error.stack);
+      res.status(500).json({ error: 'Internal Server Error' });
+      return;
+    }
+    res.json(results);
+  });
 });
 
 app.listen(PORT, HOST, () => {
